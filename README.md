@@ -53,6 +53,7 @@ CORSAIR (Comprehensive Ocean Risk and Safety Alert Information Relay) is an inte
 - **API-First Design**: RESTful APIs for third-party integration
 - **Advanced NLP**: Natural language processing for text analysis
 - **Machine Learning**: Predictive models for risk assessment
+- **Interactive Chatbot**: AI-powered citizen reporting and query system
 
 ## 🏗️ System Architecture
 
@@ -186,6 +187,9 @@ Configure Python services in `python-services/`:
 # Start the development server
 npm run dev
 
+# Access the chatbot interface
+# Navigate to http://localhost:3000/chatbot
+
 # Start Python services (separate terminal)
 cd python-services
 python social_media_monitor.py
@@ -212,30 +216,37 @@ We've provided automated setup scripts for different environments:
 **Windows:**
 ```batch
 # Social media monitoring
-setup-free-monitoring.bat
+scripts/setup-free-monitoring.bat
 
 # Advanced NLP features
-setup-advanced-nlp.bat
+scripts/setup-advanced-nlp.bat
 
 # Python services
-setup-python-services.bat
+scripts/setup-python-services.bat
 ```
 
 **Linux/macOS:**
 ```bash
 # Social media monitoring
-./setup-free-monitoring.sh
+./scripts/setup-free-monitoring.sh
 
 # Advanced NLP features
-./setup-advanced-nlp.sh
+./scripts/setup-advanced-nlp.sh
 
 # Python services
-./setup-python-services.sh
+./scripts/setup-python-services.sh
 ```
 
 ## 📚 API Documentation
 
 ### Core Endpoints
+
+#### Citizen Reporting Chatbot
+```bash
+GET /api/chatbot/status
+POST /api/chatbot/report
+GET /api/chatbot/history
+```
 
 #### Ocean Data API
 ```bash

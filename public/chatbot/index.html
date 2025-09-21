@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORSAIR Ocean Hazard Bot - Enhanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --whatsapp-green: #25d366;
+            --whatsapp-dark: #075e54;
+            --whatsapp-light-green: #dcf8c6;
+            --whatsapp-bg-dark: #0b141a;
+            --whatsapp-panel-dark: #202c33;
+            --whatsapp-text-dark: #e9edef;
+            --whatsapp-text-secondary-dark: #8696a0;
+            --whatsapp-bg-light: #f0f2f5;
+            --whatsapp-panel-light: #ffffff;
+            --whatsapp-text-light: #111b21;
+            --whatsapp-text-secondary-light: #667781;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: var(--whatsapp-bg-light);
+            --panel-primary: var(--whatsapp-panel-light);
+            --text-primary: var(--whatsapp-text-light);
+            --text-secondary: var(--whatsapp-text-secondary-light);
+        }
+
+        [data-theme="dark"], body {
+            --bg-primary: var(--whatsapp-bg-dark);
+            --panel-primary: var(--whatsapp-panel-dark);
+            --text-primary: var(--whatsapp-text-dark);
+            --text-secondary: var(--whatsapp-text-secondary-dark);
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .chat-container {
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340"><defs><pattern id="whatsapp-bg-dark" patternUnits="userSpaceOnUse" width="340" height="340"><g opacity="0.07" fill="%23ffffff"><path d="M170 170m-70 0a70 70 0 1 1 140 0a70 70 0 1 1 -140 0"/><path d="M170 170m-50 0a50 50 0 1 1 100 0a50 50 0 1 1 -100 0"/><circle cx="170" cy="170" r="30"/><circle cx="90" cy="90" r="20"/><circle cx="250" cy="90" r="20"/><circle cx="90" cy="250" r="20"/><circle cx="250" cy="250" r="20"/><path d="M50 170a120 120 0 0 1 240 0"/><path d="M170 50a120 120 0 0 1 0 240"/><circle cx="50" cy="50" r="10"/><circle cx="290" cy="50" r="10"/><circle cx="50" cy="290" r="10"/><circle cx="290" cy="290" r="10"/></g></pattern></defs><rect width="100%" height="100%" fill="url(%23whatsapp-bg-dark)"/></svg>');
+            background-color: var(--whatsapp-bg-dark);
+        }
+        
+        [data-theme="light"] .chat-container {
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340"><defs><pattern id="whatsapp-bg-light" patternUnits="userSpaceOnUse" width="340" height="340"><g opacity="0.04" fill="%23000000"><path d="M170 170m-70 0a70 70 0 1 1 140 0a70 70 0 1 1 -140 0"/><path d="M170 170m-50 0a50 50 0 1 1 100 0a50 50 0 1 1 -100 0"/><circle cx="170" cy="170" r="30"/><circle cx="90" cy="90" r="20"/><circle cx="250" cy="90" r="20"/><circle cx="90" cy="250" r="20"/><circle cx="250" cy="250" r="20"/><path d="M50 170a120 120 0 0 1 240 0"/><path d="M170 50a120 120 0 0 1 0 240"/><circle cx="50" cy="50" r="10"/><circle cx="290" cy="50" r="10"/><circle cx="50" cy="290" r="10"/><circle cx="290" cy="290" r="10"/></g></pattern></defs><rect width="100%" height="100%" fill="url(%23whatsapp-bg-light)"/></svg>');
+            background-color: var(--whatsapp-bg-light);
+        }
+        
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 10px;
+            opacity: 0.5;
+        }
+        
+        .message-bubble {
+            max-width: 85%;
+            padding: 8px 12px 6px 12px;
+            border-radius: 7.5px;
+            position: relative;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.2s ease-out;
+            font-size: 14px;
+            line-height: 1.4;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .user-message {
+            background: var(--whatsapp-light-green);
+            color: #000000;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.2), 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-message::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -8px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid var(--whatsapp-light-green);
+            border-bottom: 13px solid transparent;
+        }
+        
+        .bot-message {
+            background: var(--panel-primary);
+            color: var(--text-primary);
+            align-self: flex-start;
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        [data-theme="light"] .bot-message {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] .bot-message {
+            background: var(--whatsapp-panel-dark);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .bot-message::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -8px;
+            width: 0;
+            height: 0;
+            border-right: 8px solid var(--whatsapp-panel-dark);
+            border-bottom: 13px solid transparent;
+        }
+        
+        [data-theme="light"] .bot-message::after {
+            border-right-color: #ffffff;
+        }
+        
+        .whatsapp-header {
+            background: var(--whatsapp-dark);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--whatsapp-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 12px;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
+        }
+        
+        .firebase-status {
+            position: absolute;
+            top: 16px;
+            right: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .firebase-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ef4444;
+            transition: all 0.3s ease;
+        }
+        
+        .firebase-indicator.connected {
+            background: #10b981;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 16px 12px 8px 12px;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--whatsapp-green);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: scale(0.6);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .selection-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--panel-primary);
+            padding: 1.5rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .selection-panel.open {
+            transform: translateY(0);
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 4px 0;
+        }
+
+        .image-analysis {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .gps-success {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .gps-success a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        .gps-success a:hover {
+            color: #1d4ed8;
+        }
+
+        .quick-buttons {
+            background: var(--panel-primary);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-area {
+            background: var(--panel-primary);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .ring-2 {
+            box-shadow: 0 0 0 2px currentColor;
+        }
+
+        .ring-red-400 {
+            color: #f87171;
+        }
+
+        .ring-blue-400 {
+            color: #60a5fa;
+        }
+
+        .safety-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .safety-panel {
+            background: rgba(239, 68, 68, 0.05);
+            border: 2px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .safety-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .safety-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .safety-panel::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.3);
+            border-radius: 2px;
+        }
+
+        .emergency-contact {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .immediate-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-weight: 600;
+            animation: pulse-danger 2s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen p-4" style="background: var(--bg-primary);">
+        <div class="w-full max-w-md lg:max-w-lg overflow-hidden flex flex-col h-[90vh] md:h-[85vh] lg:h-[80vh] relative shadow-2xl rounded-lg" style="background: var(--panel-primary);">
+            <!-- WhatsApp-style Header -->
+            <div class="whatsapp-header relative">
+                <div class="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full overflow-hidden flex items-center justify-center shadow-md mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+                
+                <div class="flex-1">
+                    <h1 class="text-lg font-medium">CORSAIR Ocean Bot</h1>
+                    <p class="text-sm text-green-200 flex items-center gap-2">
+                        <span class="status-indicator"></span>
+                        online
+                    </p>
+                </div>
+
+                <!-- Firebase Connection Status -->
+                <div id="firebase-status" class="firebase-status">
+                    <div id="firebase-indicator" class="firebase-indicator"></div>
+                    <span id="firebase-text">Connecting...</span>
+                </div>
+                
+                <button id="theme-toggle" class="theme-toggle" title="Toggle theme" aria-label="Switch between light and dark theme">
+                    <svg id="theme-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chat messages area -->
+            <div id="chat-messages" class="chat-container p-6 flex flex-col gap-3 flex-grow relative"
+                 style="padding-top: 20px; padding-bottom: 20px;">
+                <!-- Initial bot message -->
+                <div class="message-bubble bot-message">
+                    <div class="text-sm">
+                        👋 Hello! I am the official bot for <strong>CORSAIR</strong> (Crowdsourced Ocean Risk & Social Analytics Integrated Reporting).
+                        <br><br>
+                        🌊 I can help you with:<br>
+                        • Report ocean hazards and emergencies<br>
+                        • Check current alerts in your area<br>
+                        • Get safety recommendations<br>
+                        • Analyze uploaded images for hazards
+                        <br><br>
+                        How can I assist you today?
+                    </div>
+                    <div class="text-xs opacity-70 mt-2 text-right" id="bot-time">
+                        <span></span> ✓
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick action buttons -->
+            <div class="quick-buttons p-3 flex flex-wrap justify-center gap-2">
+                <button class="quick-button px-4 py-2 bg-green-500 text-white rounded-full text-sm font-medium shadow-md hover:bg-green-600 transition-colors duration-200" data-message="Report a hazard" title="Report Ocean Hazard">
+                    🚨 Report Hazard
+                </button>
+                <button class="quick-button px-4 py-2 bg-white text-green-700 border border-green-500 rounded-full text-sm font-medium shadow-md hover:bg-green-50 transition-colors duration-200" data-message="What are the current alerts?" title="View Current Alerts">
+                    📊 Current Alerts  
+                </button>
+                <button class="quick-button px-4 py-2 bg-white text-green-700 border border-green-500 rounded-full text-sm font-medium shadow-md hover:bg-green-50 transition-colors duration-200" data-message="How does this platform work?" title="Learn How CORSAIR Works">
+                    ❓ How It Works
+                </button>
+            </div>
+
+            <!-- Input area -->
+            <div class="input-area p-3 flex items-center gap-3">
+                <button id="location-button" class="p-3 rounded-full bg-gray-300 text-gray-600 hover:bg-gray-400 transition-colors duration-200" title="Share Location" aria-label="Share your current location">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                </button>
+                
+                <input type="file" id="file-input" class="hidden" accept="image/*" aria-label="Upload image for analysis">
+                <button id="file-button" class="p-3 rounded-full bg-gray-300 text-gray-600 hover:bg-gray-400 transition-colors duration-200" title="Upload Image" aria-label="Upload image for hazard analysis">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                </button>
+                
+                <input type="text" id="user-input" placeholder="Type a message..." class="flex-grow p-3 rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-500">
+                
+                <button id="send-button" class="p-3 rounded-full bg-green-500 text-white hover:bg-green-600 shadow-lg transition-all duration-200 hover:scale-105" title="Send Message" aria-label="Send message">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Selection Panel -->
+            <div id="selection-panel" class="selection-panel">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="panel-title" class="text-lg font-semibold"></h3>
+                    <button id="close-panel" class="opacity-70 hover:opacity-100 transition-opacity" aria-label="Close panel">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="panel-options" class="flex flex-col gap-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9nLAkwGy_1VdoWenKH6FPBgVIOp6Jrv8",
+            authDomain: "corsair-ocean-monitoring.firebaseapp.com",
+            projectId: "corsair-ocean-monitoring",
+            storageBucket: "corsair-ocean-monitoring.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        // Initialize Firebase
+        let db = null;
+        let firebaseConnected = false;
+
+        const initializeFirebase = async () => {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                
+                // Test connection
+                await db.collection('test').limit(1).get();
+                firebaseConnected = true;
+                updateFirebaseStatus(true);
+                console.log('✅ Firebase connected successfully');
+            } catch (error) {
+                console.log('⚠️ Firebase connection failed (using demo mode):', error.message);
+                firebaseConnected = false;
+                updateFirebaseStatus(false);
+            }
+        };
+
+        const updateFirebaseStatus = (connected) => {
+            const indicator = document.getElementById('firebase-indicator');
+            const text = document.getElementById('firebase-text');
+            
+            if (connected) {
+                indicator.classList.add('connected');
+                text.textContent = 'Connected';
+            } else {
+                indicator.classList.remove('connected');
+                text.textContent = 'Demo Mode';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const fileButton = document.getElementById('file-button');
+            const fileInput = document.getElementById('file-input');
+            const locationButton = document.getElementById('location-button');
+            const selectionPanel = document.getElementById('selection-panel');
+            const panelTitle = document.getElementById('panel-title');
+            const panelOptions = document.getElementById('panel-options');
+            const closePanel = document.getElementById('close-panel');
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const botTimeElement = document.querySelector('#bot-time span');
+
+            let currentLocation = null;
+            let currentPanelState = null;
+            let currentTheme = 'dark';
+
+            // Initialize Firebase
+            initializeFirebase();
+
+            // Initialize bot message time
+            botTimeElement.textContent = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+
+            // Theme switching functionality
+            const toggleTheme = () => {
+                if (currentTheme === 'dark') {
+                    document.body.setAttribute('data-theme', 'light');
+                    currentTheme = 'light';
+                    themeIcon.innerHTML = '<path fill-rule="evenodd" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" clip-rule="evenodd"></path>';
+                } else {
+                    document.body.removeAttribute('data-theme');
+                    currentTheme = 'dark';
+                    themeIcon.innerHTML = '<path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>';
+                }
+            };
+
+            // Enhanced hazard options with safety precautions
+            const hazardOptions = {
+                'initial': {
+                    title: '🌊 What type of ocean hazard would you like to report?',
+                    options: [ 
+                        '🌊 Tsunamis & Seismic Activity', 
+                        '💨 Storm & Weather Events', 
+                        '🗑️ Marine Debris & Pollution', 
+                        '⚡ Dangerous Currents & Waves', 
+                        '🐋 Wildlife Issues', 
+                        '🚢 Navigation Hazards',
+                        '🏖️ Coastal Erosion',
+                        '🔬 Other Environmental Issues' 
+                    ]
+                },
+                '🌊 Tsunamis & Seismic Activity': {
+                    title: 'Describe the seismic or tsunami activity:',
+                    options: [ 
+                        'Tsunami warning/sighting', 
+                        'Underwater earthquake felt', 
+                        'Unusual wave patterns', 
+                        'Ground shaking near coast',
+                        'Water receding unusually' 
+                    ],
+                    safety: `🚨 <strong>IMMEDIATE SAFETY ACTIONS:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🏃‍♂️ EVACUATE IMMEDIATELY:</strong>
+• Move to higher ground (at least 100 feet above sea level)
+• Get at least 2 miles inland if possible
+• Do NOT go to the beach to watch waves
+• Follow official evacuation routes
+</div>
+
+<strong>📱 Alert Others:</strong>
+• Call Police/Emergency: <strong>100</strong> or <strong>112</strong>
+• Fire Services: <strong>101</strong>
+• Indian Coast Guard: <strong>1554</strong>
+• Warn others around you
+• Do NOT wait for official warnings
+
+<strong>🎒 If You Have Time:</strong>
+• Grab emergency kit (water, food, first aid)
+• Take important documents
+• Help elderly/disabled neighbors
+
+<strong>⚠️ Remember:</strong>
+• Tsunamis can travel faster than you can run
+• Multiple waves may come - stay away from coast for hours
+• Even small tsunamis can be deadly`
+                },
+                '💨 Storm & Weather Events': {
+                    title: 'What type of weather hazard?',
+                    options: [ 
+                        'Hurricane/Typhoon approaching', 
+                        'Severe storm surge', 
+                        'Dangerous wind conditions', 
+                        'Lightning over water',
+                        'Waterspout/Tornado' 
+                    ],
+                    safety: `🌪️ <strong>STORM SAFETY PROTOCOL:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🏠 SEEK SHELTER IMMEDIATELY:</strong>
+• Get indoors or in a sturdy building
+• Stay away from windows and glass
+• Avoid metal objects and electrical equipment
+• Do NOT shelter under trees or in vehicles
+</div>
+
+<strong>🌊 Storm Surge Precautions:</strong>
+• Evacuate low-lying coastal areas
+• Do NOT drive through flooded roads
+• Stay away from storm drains and culverts
+
+<strong>⚡ Lightning Safety:</strong>
+• Get out of water immediately
+• Avoid open areas and tall objects
+• Wait 30 minutes after last thunder before resuming activities
+
+<strong>📱 Stay Connected:</strong>
+• Monitor weather alerts from IMD (India Meteorological Department)
+• Emergency: <strong>100/112</strong>, Fire: <strong>101</strong>
+• Coast Guard: <strong>1554</strong>
+• Have battery backup for phone
+• Know your evacuation route`
+                },
+                '🗑️ Marine Debris & Pollution': {
+                    title: 'What kind of pollution or debris?',
+                    options: [ 
+                        'Oil spill', 
+                        'Plastic debris field', 
+                        'Chemical contamination', 
+                        'Sewage discharge',
+                        'Dead fish/marine life',
+                        'Abandoned fishing gear' 
+                    ],
+                    safety: `🧪 <strong>POLLUTION SAFETY MEASURES:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🚫 DO NOT TOUCH OR ENTER CONTAMINATED WATER:</strong>
+• Avoid skin contact with polluted water
+• Do not swim, surf, or fish in affected areas
+• Keep pets and children away
+• Do not eat seafood from contaminated areas
+</div>
+
+<strong>🧤 If You Must Be Near:</strong>
+• Wear protective clothing and gloves
+• Use masks to avoid inhaling fumes
+• Wash hands thoroughly after any contact
+
+<strong>📞 Report Immediately:</strong>
+• Indian Coast Guard: <strong>1554</strong>
+• Pollution Control Board: <strong>1800-11-0031</strong>
+• Emergency Services: <strong>100/112</strong>
+• Local Municipal Corporation
+• Take photos from a safe distance
+
+<strong>🏥 Health Concerns:</strong>
+• Headaches, nausea, or skin irritation - seek medical help
+• Ambulance: <strong>108</strong>
+• Do not ignore symptoms
+• Document exposure for medical professionals`
+                },
+                '⚡ Dangerous Currents & Waves': {
+                    title: 'Describe the water conditions:',
+                    options: [ 
+                        'Strong rip currents', 
+                        'Unusually large waves', 
+                        'Dangerous undertow', 
+                        'Whirlpool formation',
+                        'Tidal anomaly' 
+                    ],
+                    safety: `🌊 <strong>WATER SAFETY EMERGENCY PROTOCOL:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🏊‍♂️ IF CAUGHT IN RIP CURRENT:</strong>
+• DO NOT panic or fight the current directly
+• Swim parallel to shore until free of current
+• Then swim diagonally back to shore
+• Wave and call for help if tired
+</div>
+
+<strong>🚫 Immediate Actions:</strong>
+• Get out of water immediately
+• Alert others on beach - shout warnings
+• Do NOT attempt rescue unless trained
+• Call lifeguards or Emergency: <strong>100/112</strong>
+
+<strong>⚠️ Large Wave Safety:</strong>
+• Stay well back from water's edge
+• Waves can surge much higher than normal
+• Wet rocks are extremely slippery
+• Never turn your back on the ocean
+
+<strong>🆘 If Someone is in Trouble:</strong>
+• Throw flotation device if available
+• Call Emergency: <strong>100/112</strong> or Coast Guard: <strong>1554</strong>
+• Do NOT enter dangerous water yourself`
+                },
+                '🐋 Wildlife Issues': {
+                    title: 'What wildlife situation needs reporting?',
+                    options: [ 
+                        'Marine animal in distress', 
+                        'Aggressive marine life', 
+                        'Mass stranding event', 
+                        'Unusual wildlife behavior',
+                        'Entangled animal' 
+                    ],
+                    safety: `🐋 <strong>MARINE WILDLIFE SAFETY:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🚫 NEVER APPROACH MARINE ANIMALS:</strong>
+• Maintain at least 150 feet from whales/dolphins
+• Stay 50+ feet from seals and sea lions
+• Do NOT touch or feed any marine life
+• Injured animals can be unpredictable and dangerous
+</div>
+
+<strong>🦈 Aggressive Marine Life:</strong>
+• Exit water calmly and quickly
+• Do not splash or make sudden movements
+• Alert others immediately
+• Contact lifeguards or marine patrol
+
+<strong>📞 Who to Contact:</strong>
+• Wildlife SOS: <strong>+91-9871963535</strong>
+• Forest Department: <strong>1926</strong>
+• Indian Coast Guard: <strong>1554</strong>
+• Emergency Services: <strong>100/112</strong>
+
+<strong>🏖️ Stranded Animals:</strong>
+• Do NOT push animals back into water
+• Keep people and pets away
+• Provide shade with umbrella/towel (don't touch animal)
+• Never attempt rescue yourself`
+                },
+                '🚢 Navigation Hazards': {
+                    title: 'What navigation hazard did you observe?',
+                    options: [ 
+                        'Drifting vessel', 
+                        'Submerged obstacle', 
+                        'Missing navigation markers', 
+                        'Ice formation',
+                        'Visibility obstruction' 
+                    ],
+                    safety: `⚓ <strong>NAVIGATION HAZARD SAFETY:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🛥️ IF YOU'RE ON THE WATER:</strong>
+• Reduce speed immediately
+• Maintain safe distance from hazards
+• Use alternate routes if available
+• Alert other vessels via radio (Channel 16)
+</div>
+
+<strong>📡 Report Immediately:</strong>
+• Indian Coast Guard: <strong>1554</strong>
+• Emergency Services: <strong>100/112</strong>
+• Port Authority or Harbor Master
+• Provide GPS coordinates if possible
+
+<strong>🔍 Submerged Obstacles:</strong>
+• Mark location with GPS
+• Do NOT attempt to investigate
+• Warn approaching vessels
+• Stay clear - may damage boats or injure swimmers
+
+<strong>🌫️ Poor Visibility:</strong>
+• Do not enter water if you can't see hazards
+• Use fog signals if on vessel
+• Anchor safely until visibility improves
+• Have emergency contacts ready`
+                },
+                '🏖️ Coastal Erosion': {
+                    title: 'Describe the coastal changes:',
+                    options: [ 
+                        'Severe beach erosion', 
+                        'Cliff collapse', 
+                        'Unusual sand movement', 
+                        'Infrastructure damage',
+                        'Changed coastline' 
+                    ],
+                    safety: `🏔️ <strong>COASTAL HAZARD SAFETY:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>⚠️ UNSTABLE GROUND WARNING:</strong>
+• Stay well back from cliff edges and eroded areas
+• Do NOT walk on undermined structures
+• Avoid areas with visible cracks or settling
+• Erosion can happen suddenly
+</div>
+
+<strong>🚧 Infrastructure Damage:</strong>
+• Report damaged piers, seawalls immediately
+• Do not use compromised structures
+• Alert authorities to public safety hazards
+
+<strong>🏃‍♂️ If Ground Feels Unstable:</strong>
+• Move to solid ground immediately
+• Do not return to investigate
+• Keep others away from danger zone
+
+<strong>📞 Report To:</strong>
+• Emergency Services: <strong>100/112</strong>
+• Local Municipal Corporation
+• District Collector's Office
+• Indian Coast Guard: <strong>1554</strong> for marine infrastructure
+• Document with photos from safe distance`
+                },
+                '🔬 Other Environmental Issues': {
+                    title: 'Please describe the environmental concern:',
+                    options: [],
+                    safety: `🌍 <strong>GENERAL ENVIRONMENTAL SAFETY:</strong>
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+<strong>🛡️ PROTECTION FIRST:</strong>
+• When in doubt, stay away and observe from distance
+• Do not touch unknown substances
+• Avoid inhaling unusual odors or vapors
+• Document safely with photos/video
+</div>
+
+<strong>🧪 Unknown Contamination:</strong>
+• Assume all unknown substances are hazardous
+• Do not collect samples yourself
+• Keep children and pets away
+• Seek medical attention if you feel unwell
+
+<strong>📱 Emergency Contacts:</strong>
+• All India Poison Control: <strong>011-1066</strong>
+• Emergency Services: <strong>100/112</strong>
+• Pollution Control Board: <strong>1800-11-0031</strong>
+• Ambulance: <strong>108</strong>
+
+<strong>📝 Document Everything:</strong>
+• Time, date, weather conditions
+• Photos from multiple angles (safely)
+• Any symptoms you or others experience
+• Contact information of other witnesses`
+                }
+            };
+            
+            const openPanel = (type) => {
+                const data = hazardOptions[type];
+                if (!data) return;
+
+                panelTitle.textContent = data.title;
+                panelOptions.innerHTML = '';
+
+                // Show safety information first if available
+                if (data.safety && type !== 'initial') {
+                    const safetyDiv = document.createElement('div');
+                    safetyDiv.classList.add('safety-panel');
+                    safetyDiv.innerHTML = data.safety;
+                    panelOptions.appendChild(safetyDiv);
+                }
+
+                if (type !== 'initial') {
+                    const backButton = document.createElement('button');
+                    backButton.classList.add('px-4', 'py-3', 'bg-gray-200', 'text-gray-700', 'rounded-xl', 'text-sm', 'font-medium', 'hover:bg-gray-300', 'transition-all', 'duration-200', 'mb-3', 'flex', 'items-center', 'gap-2');
+                    backButton.innerHTML = '← Back to Categories';
+                    backButton.addEventListener('click', () => {
+                        openPanel('initial');
+                    });
+                    panelOptions.appendChild(backButton);
+                }
+
+                data.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.classList.add('px-4', 'py-3', 'bg-gradient-to-r', 'from-green-50', 'to-green-100', 'text-green-700', 'border', 'border-green-200', 'rounded-xl', 'text-sm', 'font-medium', 'shadow-sm', 'hover:from-green-100', 'hover:to-green-200', 'hover:shadow-md', 'transition-all', 'duration-200', 'text-left');
+                    button.textContent = option;
+                    button.addEventListener('click', () => {
+                        handlePanelSelection(option);
+                    });
+                    panelOptions.appendChild(button);
+                });
+
+                if (data.options.length === 0) {
+                    const textArea = document.createElement('textarea');
+                    textArea.classList.add('w-full', 'p-3', 'border', 'border-gray-200', 'rounded-xl', 'text-sm', 'focus:outline-none', 'focus:ring-2', 'focus:ring-green-500', 'resize-none');
+                    textArea.placeholder = 'Please describe the environmental issue in detail...';
+                    textArea.rows = 4;
+                    
+                    const submitButton = document.createElement('button');
+                    submitButton.classList.add('mt-3', 'px-6', 'py-3', 'bg-green-500', 'text-white', 'rounded-xl', 'font-medium', 'hover:bg-green-600', 'transition-colors', 'duration-200');
+                    submitButton.textContent = 'Submit Report';
+                    submitButton.addEventListener('click', () => {
+                        if (textArea.value.trim()) {
+                            handlePanelSelection(textArea.value.trim());
+                        }
+                    });
+                    
+                    panelOptions.appendChild(textArea);
+                    panelOptions.appendChild(submitButton);
+                    textArea.focus();
+                } 
+
+                selectionPanel.classList.add('open');
+                currentPanelState = type;
+            };
+
+            const handlePanelSelection = async (selection) => {
+                if (hazardOptions[selection]) {
+                    openPanel(selection);
+                } else {
+                    const reportMessage = `I want to report: ${selection}${currentLocation ? ` at location ${currentLocation.latitude}, ${currentLocation.longitude}` : ''}`;
+                    sendMessage(reportMessage);
+                    
+                    // Close the selection panel
+                    selectionPanel.classList.remove('open');
+                    
+                    // Automatically request image and location after hazard report
+                    setTimeout(() => {
+                        requestImageAndLocation(selection);
+                    }, 1000);
+                    
+                    // Save to Firebase if connected
+                    if (firebaseConnected && db) {
+                        try {
+                            await db.collection('hazardReports').add({
+                                report: selection,
+                                location: currentLocation,
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                                status: 'pending'
+                            });
+                            console.log('✅ Report saved to Firebase');
+                        } catch (error) {
+                            console.error('❌ Error saving to Firebase:', error);
+                        }
+                    }
+                }
+            };
+
+            // New function to request image and location after hazard report
+            const requestImageAndLocation = (hazardType) => {
+                const requestMessage = `📸 <strong>Help us verify this ${hazardType.toLowerCase()} report:</strong>
+
+<strong>1. Upload a Photo</strong> 📷
+Please share a photo of the current conditions. This helps our AI verify the hazard and assists other users.
+
+<strong>2. Share Your Location</strong> 📍
+Enable location access so we can pinpoint the hazard area and alert nearby users.
+
+<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px; border-radius: 8px; margin: 8px 0;">
+🛡️ <strong>SAFETY FIRST - ALWAYS:</strong>
+• Only take photos if you're in a SAFE location
+• Do NOT put yourself at risk for documentation
+• If conditions are dangerous, evacuate immediately
+• Your safety is more important than the report
+</div>
+
+<div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 12px; border-radius: 8px; margin: 8px 0;">
+📱 <strong>India Emergency Contacts (Save These):</strong>
+• Emergency Services: <strong>100</strong> or <strong>112</strong>
+• Fire Services: <strong>101</strong>
+• Ambulance: <strong>108</strong>
+• Indian Coast Guard: <strong>1554</strong>
+• Pollution Control: <strong>1800-11-0031</strong>
+</div>
+
+Use the 📷 button below to upload a photo and the 📍 button to share your location.`;
+
+                appendMessage(requestMessage, 'bot');
+                
+                // Highlight the image and location buttons
+                highlightActionButtons();
+            };
+
+            // Function to highlight the image and location buttons
+            const highlightActionButtons = () => {
+                const imageButton = document.getElementById('file-button');
+                const locationButton = document.getElementById('location-button');
+                
+                // Add pulsing animation to both buttons
+                imageButton.classList.add('animate-pulse', 'ring-2', 'ring-red-400');
+                locationButton.classList.add('animate-pulse', 'ring-2', 'ring-blue-400');
+                
+                // Remove highlighting after 10 seconds
+                setTimeout(() => {
+                    imageButton.classList.remove('animate-pulse', 'ring-2', 'ring-red-400');
+                    locationButton.classList.remove('animate-pulse', 'ring-2', 'ring-blue-400');
+                }, 10000);
+            };
+
+            const getLocation = () => {
+                if (navigator.geolocation) {
+                    // Show loading state
+                    locationButton.classList.add('bg-yellow-500', 'text-white');
+                    locationButton.classList.remove('bg-gray-300', 'text-gray-600', 'bg-green-500');
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            currentLocation = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude
+                            };
+                            
+                            // Success state
+                            locationButton.classList.add('bg-green-500', 'text-white');
+                            locationButton.classList.remove('bg-gray-300', 'text-gray-600', 'bg-yellow-500', 'animate-pulse', 'ring-2', 'ring-blue-400');
+                            
+                            // Enhanced success message with map link
+                            const locationMessage = `📍 <strong>Location Shared Successfully!</strong>
+
+<strong>Coordinates:</strong> ${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}
+
+🗺️ <a href="https://maps.google.com/?q=${currentLocation.latitude},${currentLocation.longitude}" target="_blank" style="color: #3b82f6; text-decoration: underline;">View on Google Maps</a>
+
+Your coordinates will be included with all hazard reports to help pinpoint the exact location and alert nearby users.`;
+                            
+                            appendMessage(locationMessage, 'bot');
+                        },
+                        (error) => {
+                            console.error("Geolocation error:", error);
+                            
+                            // Error state
+                            locationButton.classList.add('bg-red-500', 'text-white');
+                            locationButton.classList.remove('bg-gray-300', 'text-gray-600', 'bg-yellow-500', 'animate-pulse', 'ring-2', 'ring-blue-400');
+                            
+                            let errorMessage = "❌ <strong>Location Access Failed</strong><br><br>";
+                            
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage += "You denied location access. Please enable location permissions in your browser settings and try again.";
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage += "Location information is unavailable. Please check your GPS/location services.";
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage += "Location request timed out. Please try again.";
+                                    break;
+                                default:
+                                    errorMessage += "An unknown error occurred while retrieving your location.";
+                                    break;
+                            }
+                            
+                            appendMessage(errorMessage, 'bot');
+                            
+                            // Reset button after 5 seconds
+                            setTimeout(() => {
+                                locationButton.classList.add('bg-gray-300', 'text-gray-600');
+                                locationButton.classList.remove('bg-red-500', 'text-white');
+                            }, 5000);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 300000
+                        }
+                    );
+                } else {
+                    appendMessage("❌ <strong>Geolocation Not Supported</strong><br><br>Your browser doesn't support location services. Please use a modern browser with GPS capabilities.", 'bot');
+                }
+            };
+
+            // GPS extraction functions
+            const extractGPSFromImage = (file) => {
+                return new Promise((resolve, reject) => {
+                    EXIF.getData(file, function() {
+                        const lat = EXIF.getTag(this, "GPSLatitude");
+                        const lon = EXIF.getTag(this, "GPSLongitude");
+                        const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+                        const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+                        
+                        if (lat && lon) {
+                            const latitude = convertDMSToDD(lat, latRef);
+                            const longitude = convertDMSToDD(lon, lonRef);
+                            
+                            // Also get timestamp if available
+                            const dateTime = EXIF.getTag(this, "DateTime");
+                            const dateTimeOriginal = EXIF.getTag(this, "DateTimeOriginal");
+                            
+                            resolve({
+                                latitude: latitude,
+                                longitude: longitude,
+                                timestamp: dateTimeOriginal || dateTime,
+                                hasGPS: true
+                            });
+                        } else {
+                            resolve({ hasGPS: false });
+                        }
+                    });
+                });
+            };
+
+            const convertDMSToDD = (dms, ref) => {
+                let dd = dms[0] + dms[1]/60 + dms[2]/3600;
+                if (ref === "S" || ref === "W") dd = dd * -1;
+                return dd;
+            };
+
+            const saveImageDataToFirebase = async (imageData) => {
+                if (!firebaseConnected || !db) {
+                    console.log('Firebase not connected, skipping save');
+                    return;
+                }
+
+                try {
+                    const docRef = await db.collection('geotaggedImages').add({
+                        filename: imageData.filename,
+                        latitude: imageData.latitude,
+                        longitude: imageData.longitude,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        imageTimestamp: imageData.imageTimestamp,
+                        analysis: imageData.analysis,
+                        location: imageData.userLocation,
+                        hasGPS: imageData.hasGPS
+                    });
+                    
+                    console.log('✅ Image data saved to Firebase with ID:', docRef.id);
+                    return docRef.id;
+                } catch (error) {
+                    console.error('❌ Error saving image data to Firebase:', error);
+                    throw error;
+                }
+            };
+
+            // Enhanced image analysis function
+            const analyzeImage = async (file) => {
+                try {
+                    // Remove highlighting from image button since user uploaded a photo
+                    const imageButton = document.getElementById('file-button');
+                    imageButton.classList.remove('animate-pulse', 'ring-2', 'ring-red-400');
+                    
+                    // Extract GPS data from image first
+                    const gpsData = await extractGPSFromImage(file);
+                    console.log('GPS Data extracted:', gpsData);
+                    
+                    const base64Data = await base64EncodeFile(file);
+                    
+                    // Display image preview
+                    const imageElement = document.createElement('div');
+                    imageElement.classList.add('message-bubble', 'user-message');
+                    
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.classList.add('image-preview');
+                    img.alt = 'Uploaded image for analysis';
+                    
+                    const caption = document.createElement('div');
+                    caption.classList.add('text-sm', 'mt-2');
+                    let captionText = `📷 Image uploaded: ${file.name}`;
+                    
+                    if (gpsData.hasGPS) {
+                        captionText += `\n📍 GPS Location: ${gpsData.latitude.toFixed(6)}, ${gpsData.longitude.toFixed(6)}`;
+                        if (gpsData.timestamp) {
+                            captionText += `\n📅 Taken: ${gpsData.timestamp}`;
+                        }
+                    } else {
+                        captionText += '\n📍 No GPS data found in image';
+                    }
+                    
+                    caption.innerHTML = captionText.replace(/\n/g, '<br>');
+                    
+                    const timeElement = document.createElement('div');
+                    timeElement.classList.add('text-xs', 'opacity-70', 'mt-1', 'text-right');
+                    const currentTime = new Date().toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: false 
+                    });
+                    timeElement.innerHTML = `${currentTime} ✓✓`;
+                    
+                    imageElement.appendChild(img);
+                    imageElement.appendChild(caption);
+                    imageElement.appendChild(timeElement);
+                    chatMessages.appendChild(imageElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    // Show typing indicator
+                    showTypingIndicator();
+
+                    // Use Gemini Vision API to analyze the image
+                    const apiKey = "AIzaSyD9nLAkwGy_1VdoWenKH6FPBgVIOp6Jrv8";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+                    const prompt = `Analyze this image for potential ocean hazards or coastal safety concerns. Look for:
+- Weather conditions (storms, rough seas, dangerous waves)
+- Marine debris or pollution
+- Coastal erosion or damage
+- Wildlife in distress
+- Navigation hazards
+- Any other safety concerns
+
+Provide a brief analysis in 2-3 sentences with specific observations and safety recommendations if needed. If no hazards are detected, mention what you can see in the image.`;
+
+                    const payload = {
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: file.type,
+                                        data: base64Data
+                                    }
+                                }
+                            ]
+                        }]
+                    };
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    hideTypingIndicator();
+
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    const analysis = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Unable to analyze image at this time.";
+
+                    // Display analysis results
+                    const analysisElement = document.createElement('div');
+                    analysisElement.classList.add('message-bubble', 'bot-message');
+                    
+                    const analysisContent = document.createElement('div');
+                    analysisContent.innerHTML = `
+                        <div class="image-analysis">
+                            🔍 <strong>Image Analysis Results:</strong><br>
+                            ${analysis}
+                        </div>
+                    `;
+                    
+                    const timeElement2 = document.createElement('div');
+                    timeElement2.classList.add('text-xs', 'opacity-70', 'mt-1', 'text-right');
+                    const currentTime2 = new Date().toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: false 
+                    });
+                    timeElement2.innerHTML = `${currentTime2} ✓`;
+                    
+                    analysisElement.appendChild(analysisContent);
+                    analysisElement.appendChild(timeElement2);
+                    chatMessages.appendChild(analysisElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    // Save comprehensive image data to Firebase
+                    if (firebaseConnected && db) {
+                        try {
+                            const imageDataToSave = {
+                                filename: file.name,
+                                analysis: analysis,
+                                userLocation: currentLocation,
+                                hasGPS: gpsData.hasGPS,
+                                latitude: gpsData.hasGPS ? gpsData.latitude : null,
+                                longitude: gpsData.hasGPS ? gpsData.longitude : null,
+                                imageTimestamp: gpsData.timestamp || null
+                            };
+                            
+                            const docId = await saveImageDataToFirebase(imageDataToSave);
+                            
+                            // Show success message if GPS data was found
+                            if (gpsData.hasGPS) {
+                                const gpsSuccessElement = document.createElement('div');
+                                gpsSuccessElement.classList.add('message-bubble', 'bot-message');
+                                gpsSuccessElement.innerHTML = `
+                                    <div class="text-sm">
+                                        ✅ <strong>GPS Data Extracted & Saved!</strong><br>
+                                        📍 Location: ${gpsData.latitude.toFixed(6)}, ${gpsData.longitude.toFixed(6)}<br>
+                                        💾 Saved to Firebase with ID: ${docId}<br>
+                                        🗺️ <a href="https://maps.google.com/?q=${gpsData.latitude},${gpsData.longitude}" target="_blank" class="text-blue-400 underline">View on Google Maps</a>
+                                    </div>
+                                    <div class="text-xs opacity-70 mt-1 text-right">
+                                        ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })} ✓
+                                    </div>
+                                `;
+                                chatMessages.appendChild(gpsSuccessElement);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                                
+                                // Check if user also has location enabled
+                                if (currentLocation) {
+                                    setTimeout(() => {
+                                        const completionMessage = `🎯 <strong>Excellent! Report Enhancement Complete</strong>
+
+✅ Hazard report submitted<br>
+✅ Photo with GPS coordinates uploaded<br>
+✅ Your current location shared<br>
+
+<div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); padding: 12px; border-radius: 8px; margin: 8px 0;">
+🏆 <strong>Complete Report:</strong> Thank you for providing comprehensive information! This helps our community stay safer by providing accurate, verified hazard data.
+</div>
+
+Your report is now being processed and will alert nearby users. Stay safe! 🛡️`;
+                                        
+                                        appendMessage(completionMessage, 'bot');
+                                    }, 1500);
+                                }
+                            }
+                            
+                        } catch (error) {
+                            console.error('❌ Error saving image data to Firebase:', error);
+                            appendMessage("⚠️ Image analyzed successfully, but there was an error saving the GPS data.", 'bot');
+                        }
+                    } else {
+                        if (gpsData.hasGPS) {
+                            appendMessage("📍 GPS coordinates detected but not saved (Firebase not connected). In demo mode.", 'bot');
+                        }
+                    }
+
+                } catch (error) {
+                    hideTypingIndicator();
+                    console.error("Image analysis error:", error);
+                    appendMessage("❌ Sorry, there was an error analyzing your image. Please try again.", 'bot');
+                }
+            };
+            
+            const base64EncodeFile = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            // Function to convert markdown formatting to HTML
+            const formatMessageText = (text) => {
+                if (!text) return text;
+                
+                return text
+                    // Convert **bold** to <strong>
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    // Convert *italic* to <em>
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    // Convert line breaks to <br>
+                    .replace(/\n/g, '<br>')
+                    // Convert bullet points
+                    .replace(/^• (.*$)/gim, '&bull; $1')
+                    // Convert numbered lists
+                    .replace(/^(\d+)\. (.*$)/gim, '<strong>$1.</strong> $2');
+            };
+
+            const sendMessage = async (messageTextFromButton = null) => {
+                const messageText = messageTextFromButton || userInput.value.trim();
+                const file = fileInput.files[0];
+                let hasContent = false;
+                
+                // Handle image upload separately
+                if (file && file.type.startsWith('image/')) {
+                    analyzeImage(file);
+                    fileInput.value = '';
+                    return;
+                }
+                
+                let userParts = [];
+                if (messageText !== "") {
+                    userParts.push({ text: messageText });
+                    hasContent = true;
+                }
+                
+                if (currentLocation) {
+                    const locationText = `My current location is Latitude: ${currentLocation.latitude}, Longitude: ${currentLocation.longitude}.`;
+                    userParts.push({ text: locationText });
+                }
+                
+                if (!hasContent) return;
+                
+                appendMessage(messageText, 'user');
+                userInput.value = '';
+                fileInput.value = '';
+
+                showTypingIndicator();
+                
+                try {
+                    const apiKey = "AIzaSyD9nLAkwGy_1VdoWenKH6FPBgVIOp6Jrv8";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+                    const systemPrompt = `You are CORSAIR Bot, a friendly WhatsApp-style assistant for ocean hazard monitoring and coastal safety. 
+
+🌊 CORSAIR (Crowdsourced Ocean Risk & Social Analytics Integrated Reporting) helps communities:
+1. **Report Hazards:** Users can report ocean hazards like tsunamis, storms, pollution, dangerous currents. All reports are geotagged with location data.
+
+2. **Get Alerts:** Check current alerts in your area or anywhere you plan to go. This helps make informed decisions before heading out.
+
+3. **Community-Driven Insights:** All reports contribute to a real-time 'hotspot heatmap' showing where hazards are most prevalent. AI helps detect severity of incidents, making alerts more accurate.
+
+The system creates safer ocean environments through quick information sharing and community collaboration.
+
+Your responses should be:
+- Conversational and WhatsApp-like (short, friendly)
+- Use emojis appropriately 
+- Professional yet approachable
+- Safety-focused and actionable
+- Brief (2-3 sentences max unless detailed explanation needed)
+
+When users report hazards, acknowledge and provide safety advice. Always prioritize user safety in emergencies.`;
+                    
+                    const payload = {
+                        contents: [{ 
+                            role: "user", 
+                            parts: userParts 
+                        }],
+                        systemInstruction: {
+                            parts: [{ text: systemPrompt }]
+                        }
+                    };
+
+                    console.log('Sending request to Gemini API...', payload);
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API Error:', errorText);
+                        throw new Error(`API call failed with status ${response.status}: ${errorText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('API Response:', data);
+                    
+                    hideTypingIndicator();
+                    
+                    // Extract bot response
+                    const botResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (botResponse) {
+                        appendMessage(botResponse, 'bot');
+                    } else {
+                        console.error('No response text found in API response:', data);
+                        appendMessage("❌ Sorry, I didn't receive a proper response. Please try again.", 'bot');
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching bot response:", error);
+                    hideTypingIndicator();
+                    
+                    // Provide context-aware fallback responses
+                    let fallbackResponse = "❌ Sorry, there was an error connecting to CORSAIR Intelligence. ";
+                    
+                    const lowerMessage = messageText.toLowerCase();
+                    
+                    if (lowerMessage.includes('how') && (lowerMessage.includes('work') || lowerMessage.includes('platform'))) {
+                        fallbackResponse = `🌊 <strong>How CORSAIR Works:</strong>
+
+<strong>1. Report Hazards</strong> 🚨 
+Share ocean emergencies, storms, pollution, or dangerous conditions. All reports are automatically geotagged.
+
+<strong>2. Get Alerts</strong> 📊 
+Check current hazards in your area before heading out. Stay informed, stay safe.
+
+<strong>3. Community Intelligence</strong> 🤝 
+Your reports help create real-time hazard maps. AI analyzes severity to provide accurate warnings.
+
+It's all about sharing information quickly to keep our ocean communities safer! 🛡️`;
+                    } else if (lowerMessage.includes('alert') || lowerMessage.includes('current')) {
+                        fallbackResponse = `📊 <strong>Current Ocean Alerts:</strong>
+
+🟡 <strong>No active alerts in your immediate area</strong>
+
+However, please note:
+• Always check local weather conditions before going out
+• Be aware of changing tides and currents
+• Report any hazards you observe to help the community
+
+<em>Note: This is demo mode. In the full system, you'd see real-time alerts from your location.</em>`;
+                    } else if (lowerMessage.includes('report')) {
+                        fallbackResponse = `🚨 <strong>Report Ocean Hazards:</strong>
+
+I can help you report:
+• Storms & dangerous weather
+• Marine pollution & debris  
+• Unusual waves or currents
+• Wildlife in distress
+• Navigation hazards
+
+Use the "Report Hazard" button below to get started, or describe what you've observed and I'll guide you through the process.`;
+                    } else {
+                        fallbackResponse += "Please try again, or use the quick action buttons below for common tasks.";
+                    }
+                    
+                    appendMessage(fallbackResponse, 'bot');
+                }
+            };
+
+            const appendMessage = (text, sender) => {
+                if (!text && sender === 'user') return;
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message-bubble', sender === 'user' ? 'user-message' : 'bot-message');
+                
+                const messageContent = document.createElement('div');
+                if (sender === 'bot') {
+                    // Format the bot message text to convert markdown to HTML
+                    messageContent.innerHTML = formatMessageText(text);
+                } else {
+                    messageContent.textContent = text;
+                }
+                messageElement.appendChild(messageContent);
+                
+                // Add timestamp
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('text-xs', 'opacity-70', 'mt-1', 'text-right');
+                const currentTime = new Date().toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                
+                if (sender === 'user') {
+                    timeElement.innerHTML = `${currentTime} ✓✓`;
+                } else {
+                    timeElement.innerHTML = `${currentTime} ✓`;
+                }
+                
+                messageElement.appendChild(timeElement);
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            const createBotMessageElement = () => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message-bubble', 'bot-message');
+                
+                const messageContent = document.createElement('div');
+                messageElement.appendChild(messageContent);
+                
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('text-xs', 'opacity-70', 'mt-1', 'text-right');
+                const currentTime = new Date().toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                timeElement.innerHTML = `${currentTime} ✓`;
+                messageElement.appendChild(timeElement);
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return messageContent;
+            };
+
+            const showTypingIndicator = () => {
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typing-indicator';
+                typingDiv.classList.add('typing-indicator', 'bot-message', 'message-bubble');
+                
+                const dotsContainer = document.createElement('div');
+                dotsContainer.innerHTML = '<span></span><span></span><span></span>';
+                typingDiv.appendChild(dotsContainer);
+                
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('text-xs', 'opacity-70', 'mt-1', 'text-right');
+                timeElement.textContent = 'typing...';
+                typingDiv.appendChild(timeElement);
+                
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            const hideTypingIndicator = () => {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            };
+
+            // Event listeners
+            themeToggle.addEventListener('click', toggleTheme);
+
+            document.querySelectorAll('.quick-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const message = button.getAttribute('data-message');
+                    if (message === 'Report a hazard') {
+                        openPanel('initial');
+                    } else {
+                        selectionPanel.classList.remove('open');
+                        sendMessage(message);
+                    }
+                });
+            });
+
+            if (closePanel) {
+                closePanel.addEventListener('click', () => {
+                    selectionPanel.classList.remove('open');
+                });
+            }
+
+            sendButton.addEventListener('click', () => sendMessage());
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            fileButton.addEventListener('click', () => {
+                fileInput.click();
+            });
+            locationButton.addEventListener('click', getLocation);
+        });
+    </script>
+</body>
+</html>
