@@ -1,0 +1,144 @@
+{
+  "summary": {
+    "total_tweets": 50,
+    "sentiment_distribution": {
+      "negative": 33,
+      "neutral": 17
+    },
+    "avg_sentiment_score": -0.313
+  },
+  "by_hazard_category": {
+    "pollution": {
+      "total_tweets": 9,
+      "sentiment_distribution": {
+        "negative": 9
+      },
+      "avg_sentiment_score": -0.3,
+      "avg_engagement": {
+        "likes": 1100.0,
+        "retweets": 750.0
+      }
+    },
+    "tsunami": {
+      "total_tweets": 12,
+      "sentiment_distribution": {
+        "negative": 12
+      },
+      "avg_sentiment_score": -0.162,
+      "avg_engagement": {
+        "likes": 2500.0,
+        "retweets": 1200.0
+      }
+    },
+    "flooding": {
+      "total_tweets": 10,
+      "sentiment_distribution": {
+        "neutral": 10
+      },
+      "avg_sentiment_score": 0.1,
+      "avg_engagement": {
+        "likes": 1200.0,
+        "retweets": 600.0
+      }
+    },
+    "climate": {
+      "total_tweets": 12,
+      "sentiment_distribution": {
+        "negative": 12
+      },
+      "avg_sentiment_score": -1.0,
+      "avg_engagement": {
+        "likes": 900.0,
+        "retweets": 400.0
+      }
+    },
+    "storms": {
+      "total_tweets": 7,
+      "sentiment_distribution": {
+        "neutral": 7
+      },
+      "avg_sentiment_score": 0.0,
+      "avg_engagement": {
+        "likes": 1500.0,
+        "retweets": 800.0
+      }
+    }
+  },
+  "top_keywords": {
+    "tsunami": 12,
+    "ocean warming": 12,
+    "coral bleaching": 12,
+    "marine ecosystem": 12,
+    "coastal erosion": 10,
+    "rising sea levels": 10,
+    "marine pollution": 9,
+    "oil spill": 9,
+    "storm surge": 7,
+    "hurricane": 7
+  },
+  "notable_tweets": {
+    "most_negative": {
+      "username": "MarineBiology",
+      "handle": "marinebio",
+      "content": "Coral bleaching event spreading across the Pacific. Ocean warming is devastating marine ecosystems.",
+      "timestamp": "2024-09-10 08:45",
+      "retweets": 400,
+      "likes": 900,
+      "replies": 100,
+      "tweet_id": "mock_4",
+      "matched_keywords": [
+        "ocean warming",
+        "coral bleaching",
+        "marine ecosystem"
+      ],
+      "sentiment_score": -1.0,
+      "sentiment_label": "negative",
+      "confidence": 1.0,
+      "hazard_category": "climate",
+      "source": "MOCK_DATA",
+      "location": null,
+      "verified": false
+    },
+    "most_positive": {
+      "username": "ClimateScientist",
+      "handle": "climatescience",
+      "content": "Rising sea levels are accelerating coastal erosion worldwide. We need immediate action on climate change.",
+      "timestamp": "2024-09-10 10:00",
+      "retweets": 600,
+      "likes": 1200,
+      "replies": 150,
+      "tweet_id": "mock_3",
+      "matched_keywords": [
+        "coastal erosion",
+        "rising sea levels"
+      ],
+      "sentiment_score": 0.1,
+      "sentiment_label": "neutral",
+      "confidence": 0.15000000000000002,
+      "hazard_category": "flooding",
+      "source": "MOCK_DATA",
+      "location": null,
+      "verified": false
+    },
+    "most_engaging": {
+      "username": "OceanWatch",
+      "handle": "oceanwatch",
+      "content": "Massive tsunami warning issued for Pacific coast. Waves up to 15 feet expected. Evacuate immediately! #tsunami #safety",
+      "timestamp": "2024-09-10 14:30",
+      "retweets": 1200,
+      "likes": 2500,
+      "replies": 300,
+      "tweet_id": "mock_1",
+      "matched_keywords": [
+        "tsunami"
+      ],
+      "sentiment_score": -0.16249999999999998,
+      "sentiment_label": "negative",
+      "confidence": 0.24374999999999997,
+      "hazard_category": "tsunami",
+      "source": "MOCK_DATA",
+      "location": null,
+      "verified": true
+    }
+  }
+}

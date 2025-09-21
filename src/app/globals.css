@@ -1,0 +1,238 @@
+/* Leaflet CSS for maps */
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Custom font classes */
+.font-playfair {
+  font-family: var(--font-playfair), serif;
+}
+
+.font-dancing {
+  font-family: var(--font-dancing), cursive;
+}
+
+/* Welcome message animations */
+@keyframes welcome-glow {
+  0%, 100% { 
+    text-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+  }
+  50% { 
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 30px rgba(147, 51, 234, 0.4);
+  }
+}
+
+.welcome-name {
+  animation: welcome-glow 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+.welcome-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ScrollStack enhancements */
+@keyframes scroll-stack-enter {
+  from {
+    opacity: 0;
+    transform: translateY(60px) scale(0.8) rotate(10deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+.scroll-stack-item {
+  animation: scroll-stack-enter 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.scroll-stack-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 215 28% 18%;
+    --card: 210 40% 100%;
+    --card-foreground: 215 28% 18%;
+    --popover: 210 40% 100%;
+    --popover-foreground: 215 28% 18%;
+    --primary: 205 90% 45%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 215 28% 18%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 20% 45.1%;
+    --accent: 250 80% 55%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 205 90% 45%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 215 28% 15%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 205 90% 55%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 215 28% 25%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 28% 25%;
+    --sidebar-ring: 205 90% 55%;
+
+    --chart-1: 205 90% 55%;
+    --chart-2: 180 70% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 0 75% 60%;
+    --chart-5: 250 80% 65%;
+  }
+
+  .dark {
+    --background: 215 28% 18%;
+    --foreground: 210 40% 98%;
+    --card: 215 28% 15%;
+    --card-foreground: 210 40% 98%;
+    --popover: 215 28% 15%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 205 90% 55%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 215 28% 25%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 25%;
+    --muted-foreground: 215 20% 65.1%;
+    --accent: 250 80% 55%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 28% 25%;
+    --input: 215 28% 25%;
+    --ring: 205 90% 55%;
+
+    --sidebar-background: 215 28% 12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 205 90% 55%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 215 28% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 28% 20%;
+    --sidebar-ring: 205 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .form-container-base {
+    @apply absolute top-0 h-full transition-all ease-in-out;
+    transition-duration: 600ms;
+  }
+  .sign-in-container {
+    @apply left-0 w-1/2 z-20;
+  }
+  .right-panel-active .sign-in-container {
+    @apply transform translate-x-full;
+  }
+  .sign-up-container {
+    @apply left-0 w-1/2 opacity-0 z-10;
+  }
+  .right-panel-active .sign-up-container {
+    @apply transform translate-x-full opacity-100 z-50 animate-show;
+  }
+  .overlay-container {
+    @apply absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform ease-in-out z-[100];
+    transition-duration: 600ms;
+  }
+  .right-panel-active .overlay-container {
+    @apply transform -translate-x-full;
+  }
+  .overlay {
+    @apply bg-primary text-primary-foreground relative -left-full h-full w-[200%] transform transition-transform ease-in-out;
+    transition-duration: 600ms;
+  }
+  .right-panel-active .overlay {
+    @apply transform translate-x-1/2;
+  }
+  .overlay-panel {
+    @apply absolute flex items-center justify-center flex-col px-10 text-center top-0 h-full w-1/2 transform transition-transform ease-in-out;
+    transition-duration: 600ms;
+  }
+  .overlay-left {
+    @apply -translate-x-[20%];
+  }
+  .right-panel-active .overlay-left {
+    @apply transform translate-x-0;
+  }
+  .overlay-right {
+    @apply right-0 translate-x-0;
+  }
+  .right-panel-active .overlay-right {
+    @apply transform translate-x-[20%];
+  }
+
+  /* Mobile auth form transitions */
+  .auth-form-mobile {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Enhanced animations for auth forms */
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .auth-slide-in-left {
+    animation: slideInFromLeft 0.4s ease-out;
+  }
+  
+  .auth-slide-in-right {
+    animation: slideInFromRight 0.4s ease-out;
+  }
+}

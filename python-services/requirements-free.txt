@@ -1,0 +1,27 @@
+# FREE Social Media Monitoring Dependencies
+# No API keys required - all free sources
+
+# Core dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Text processing (free)
+textblob>=0.17.1
+
+# RSS/Feed parsing (free)
+feedparser>=6.0.10
+
+# Firebase (free tier available)
+firebase-admin>=6.2.0
+
+# Optional: For better text processing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Optional: For location processing (if needed)
+geopy>=2.4.0
+
+# Note: No expensive APIs required!
+# - No Twitter API ($100+/month)
+# - No premium news APIs
+# - Only free government and public data sources
